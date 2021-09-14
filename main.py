@@ -39,20 +39,35 @@ def voronoi2d():
 	pba2d.voronoi(arr, 32, 32, 2)
 	print(arr)
 
-def voronoi3d():
+
+
+def voronoi_to_dist(voronoi):
+	""" voronoi is encoded """
+	def decoded_nonstacked(p):
+		return np.right_shift(p, 20) & 1023, np.right_shift(p, 10) & 1023, p & 1023
+
+	x_i, y_i, z_i = np.indices(voronoi.shape)
+	x_v, y_v, z_v = decoded_nonstacked(voronoi)
+
+	return np.sqrt((x - x_i) ** 2 + (y - y_i) ** 2 + (z - z_i) ** 2)
+
+
+def voronoi3d(omega):
+	""" omega is np 3d-array """
 	def encoded(p):
-		return np.left_shift(p[:, 0], 20) | np.left_shift(p[:, 1], 10) | p[:, 2]
+		return np.left_shift(p[..., 0], 20) | np.left_shift(p[..., 1], 10) | p[..., 2]
 
 	def decoded(p):
 		return np.stack([np.right_shift(p, 20) & 1023, np.right_shift(p, 10) & 1023, p & 1023], axis=-1)
 
-	points = np.array([
+	"""points = np.array([
 		[0, 1, 2],
-		[511,511,511],
-	])
+		[511, 511, 511],
+	])"""
+	points = np.transpose(np.where(omega))
 
 	# empty input array
-	arr = np.full([512,512,512], pba3d.MARKER, dtype=np.int)
+	arr = np.full(omega.shape, pba3d.MARKER, dtype=int)
 	# put the points at their positions
 	arr[points[:, 2], points[:, 1], points[:, 0]] = encoded(points)
 
@@ -72,6 +87,17 @@ def voronoi3d():
 	# 		phase1Band, phase2Band, phase3Band
 	# Parameters must divide textureSize
 	pba3d.voronoi(arr, 1, 1, 2)
+
 	print(arr)
 
-voronoi3d()
+def voronoi_to_dist(voronoi):
+	""" voronoi is encoded """
+	def decoded_nonstacked(p):
+		return np.right_shift(p, 20) & 1023, np.right_shift(p, 10) & 1023, p & 1023
+
+	x_i, y_i, z_i = np.indices(voronoi.shape)
+	x_v, y_v, z_v = decoded_nonstacked(voronoi)
+
+	return np.sqrt((x - x_i) ** 2 + (y - y_i) ** 2 + (z - z_i) ** 2)
+
+
