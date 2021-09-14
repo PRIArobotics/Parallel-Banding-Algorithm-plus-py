@@ -88,6 +88,10 @@ def voronoi_to_dist(voronoi):
 	x_i, y_i, z_i = np.indices(voronoi.shape)
 	x_v, y_v, z_v = decoded_nonstacked(voronoi)
 
-	return np.sqrt((x - x_i) ** 2 + (y - y_i) ** 2 + (z - z_i) ** 2)
+	return np.sqrt((x_v - x_i) ** 2 + (y_v - y_i) ** 2 + (z_v - z_i) ** 2)
 
 
+arr = np.load("test.npy")
+dist = voronoi_to_dist(arr)
+
+print(dist)
