@@ -40,18 +40,6 @@ def voronoi2d():
 	print(arr)
 
 
-
-def voronoi_to_dist(voronoi):
-	""" voronoi is encoded """
-	def decoded_nonstacked(p):
-		return np.right_shift(p, 20) & 1023, np.right_shift(p, 10) & 1023, p & 1023
-
-	x_i, y_i, z_i = np.indices(voronoi.shape)
-	x_v, y_v, z_v = decoded_nonstacked(voronoi)
-
-	return np.sqrt((x - x_i) ** 2 + (y - y_i) ** 2 + (z - z_i) ** 2)
-
-
 def voronoi3d(omega):
 	""" omega is np 3d-array """
 	def encoded(p):
@@ -89,6 +77,8 @@ def voronoi3d(omega):
 	pba3d.voronoi(arr, 1, 1, 2)
 
 	print(arr)
+
+	return arr
 
 def voronoi_to_dist(voronoi):
 	""" voronoi is encoded """
