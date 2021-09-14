@@ -95,3 +95,4 @@ arr = np.load("test.npy")
 dist = voronoi_to_dist(arr)
 
 print(dist)
+np.save("out.npy", arr)
