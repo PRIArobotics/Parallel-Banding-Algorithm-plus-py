@@ -210,3 +210,18 @@ __global__ void kernelColorAxis(int *input, int *output, int size)
 	    __syncthreads();
 	}
 }
+
+__global__ void kernelDistance(int* input, float* output, int size)
+{
+	int tx = blockIdx.x * blockDim.x + threadIdx.x;
+	int tz = blockIdx.y * blockDim.y + threadIdx.y;
+	int ty = blockIdx.z * blockDim.z + threadIdx.z;
+
+	int id = TOID(tx, ty, tz, size);
+
+    float dx = GET_X(input[id]) - tx;
+	float dy = GET_Y(input[id]) - ty;
+	float dz = GET_Z(input[id]) - tz;
+
+    output[id] = sqrt(dx * dx + dy * dy + dz * dz);
+}

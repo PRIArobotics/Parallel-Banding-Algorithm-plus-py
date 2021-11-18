@@ -443,3 +443,15 @@ __global__ void kernelColor(short2 *input, short2 *output, int size)
         __syncthreads();
     }
 }
+
+__global__ void kernelDistance(short2* input, float* output, int size)
+{
+    int tx = __mul24(blockIdx.x, blockDim.x) + threadIdx.x;
+    int ty = __mul24(blockIdx.y, blockDim.y) + threadIdx.y;
+    int id = TOID(tx, ty, size);
+
+    float dx = input[id].x - tx;
+    float dy = input[id].y - ty;
+
+    output[id] = sqrt(dx*dx + dy*dy);
+}

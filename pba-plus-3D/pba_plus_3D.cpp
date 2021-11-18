@@ -38,10 +38,69 @@ PyObject* pba3DVoronoiDiagram_impl(PyObject*, PyObject *args) {
 	Py_RETURN_NONE;
 }
 
+PyObject* pba3DDistance_impl(PyObject*, PyObject* args) {
+	PyObject* oIn, * oOut;
+	int phase1Band, phase2Band, phase3Band;
+
+	if (!PyArg_ParseTuple(args, "O!O!iii", &PyArray_Type, &oIn, &PyArray_Type, &oOut, &phase1Band, &phase2Band, &phase3Band))
+		return NULL;
+
+	PyArrayObject* arrIn = (PyArrayObject*)PyArray_FROM_OTF(oIn, NPY_INT, NPY_ARRAY_IN_ARRAY);
+	if (arrIn == NULL)
+		return NULL;
+
+	if (PyArray_NDIM(arrIn) != 3 ||
+		PyArray_DIM(arrIn, 0) != PyArray_DIM(arrIn, 1) ||
+		PyArray_DIM(arrIn, 0) != PyArray_DIM(arrIn, 2)
+	) {
+		PyArray_DiscardWritebackIfCopy(arrIn);
+		Py_DECREF(arrIn);
+		PyErr_SetString(PyExc_RuntimeError, "input array must have dimensions n*n*n");
+		return NULL;
+	}
+
+	PyArrayObject* arrOut = (PyArrayObject*)PyArray_FROM_OTF(oOut, NPY_FLOAT, NPY_ARRAY_OUT_ARRAY);
+	if (arrOut == NULL) {
+		PyArray_DiscardWritebackIfCopy(arrIn);
+		Py_DECREF(arrIn);
+		return NULL;
+	}
+
+	if (PyArray_NDIM(arrOut) != 3 ||
+		PyArray_DIM(arrOut, 0) != PyArray_DIM(arrIn, 0) ||
+		PyArray_DIM(arrOut, 1) != PyArray_DIM(arrIn, 1) ||
+		PyArray_DIM(arrOut, 2) != PyArray_DIM(arrIn, 2)
+	) {
+		PyArray_DiscardWritebackIfCopy(arrIn);
+		Py_DECREF(arrIn);
+		PyArray_DiscardWritebackIfCopy(arrOut);
+		Py_DECREF(arrOut);
+		PyErr_SetString(PyExc_RuntimeError, "output array must have same dimensions as the input array");
+		return NULL;
+	}
+
+	int textureSize = PyArray_DIM(arrIn, 0);
+	int* data = (int*)PyArray_DATA(arrIn);
+	float* output = (float*)PyArray_DATA(arrOut);
+
+	pba3DInitialization(textureSize);
+	pba3DDistance(data, output, phase1Band, phase2Band, phase3Band);
+	pba3DDeinitialization();
+
+	PyArray_ResolveWritebackIfCopy(arrIn);
+	Py_DECREF(arrIn);
+
+	PyArray_ResolveWritebackIfCopy(arrOut);
+	Py_DECREF(arrOut);
+
+	Py_RETURN_NONE;
+}
+
 static PyMethodDef pba3d_methods[] = {
 	// The first property is the name exposed to Python, fast_tanh, the second is the C++
 	// function name that contains the implementation.
 	{ "voronoi", (PyCFunction) pba3DVoronoiDiagram_impl, METH_VARARGS, nullptr },
+	{ "distance", (PyCFunction) pba3DDistance_impl, METH_VARARGS, nullptr },
 
 	// Terminate the array with an object containing nulls.
 	{ nullptr, nullptr, 0, nullptr }

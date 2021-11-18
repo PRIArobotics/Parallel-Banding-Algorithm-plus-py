@@ -147,6 +147,14 @@ void pba2DCompute(int m1, int m2, int m3)
     pba2DPhase3(m3); 
 }
 
+void pba2DComputeDistance()
+{
+    dim3 block = dim3();
+    dim3 grid = dim3(pbaTexSize, pbaTexSize);
+
+    kernelDistance << < grid, block >> > (pbaTextures[1], (float*)pbaTextures[0], pbaTexSize);
+}
+
 // Compute 2D Voronoi diagram
 // Input: a 2D texture. Each pixel is represented as two "short" integer. 
 //    For each site at (x, y), the pixel at coordinate (x, y) should contain 
@@ -163,4 +171,17 @@ void pba2DVoronoiDiagram(short *input, short *output, int m1, int m2, int m3)
 
     // Copy back the result
     cudaMemcpy(output, pbaTextures[1], pbaMemSize, cudaMemcpyDeviceToHost); 
+}
+
+void pba2DDistance(short *input, float *output, int m1, int m2, int m3)
+{
+    // Initialization
+    pba2DInitializeInput(input);
+
+    // Computation
+    pba2DCompute(m1, m2, m3);
+    pba2DComputeDistance();
+
+    // Copy back the result
+    cudaMemcpy(output, pbaTextures[0], pbaMemSize, cudaMemcpyDeviceToHost);
 }

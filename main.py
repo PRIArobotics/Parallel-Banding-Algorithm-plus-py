@@ -39,6 +39,27 @@ def voronoi2d():
 	pba2d.voronoi(arr, 32, 32, 2)
 	print(arr)
 
+def distance2d():
+	points = np.array([
+		[0, 1],
+		[2047, 2047],
+	])
+
+	# empty input array
+	arrIn = np.full([2048, 2048, 2], pba2d.MARKER, dtype=np.short)
+	# put the points at their positions
+	arrIn[points[:, 1], points[:, 0]] = points
+
+	arrOut = np.full(arrIn.shape[:-1], 0, dtype=np.float32)
+
+	# Compute 2D Voronoi diagram
+	# Input: a 2D texture. Each pixel is represented as two "short" integer. 
+	#    For each site at (x, y), the pixel at coordinate (x, y) should contain 
+	#    the pair (x, y). Pixels that are not sites should contain the pair (MARKER, MARKER)
+	# See original paper for the effect of the three parameters: m1, m2, m3
+	# Parameters must divide textureSize
+	pba2d.distance(arrIn, arrOut, 32, 32, 2)
+	print(arrOut)
 
 def voronoi3d(omega):
 	""" omega is np 3d-array """
@@ -80,6 +101,45 @@ def voronoi3d(omega):
 
 	return arr
 
+def distance3d():
+	""" omega is np 3d-array """
+	def encoded(p):
+		return np.left_shift(p[..., 0], 20) | np.left_shift(p[..., 1], 10) | p[..., 2]
+
+	def decoded(p):
+		return np.stack([np.right_shift(p, 20) & 1023, np.right_shift(p, 10) & 1023, p & 1023], axis=-1)
+
+	points = np.array([
+		[0, 1, 2],
+		[511, 511, 511],
+	])
+	# points = np.transpose(np.where(omega))
+
+	# empty input array
+	arrIn = np.full([512, 512, 512], pba3d.MARKER, dtype=int)
+	# put the points at their positions
+	arrIn[points[:, 2], points[:, 1], points[:, 0]] = encoded(points)
+
+	arrOut = np.full(arrIn.shape, 0, dtype=np.float32)
+
+	# cuda0 = torch.device('cuda:0')
+	# tensor = torch.tensor([0, 0], dtype=torch.short, device=cuda0)
+
+	# print(points)
+	# print(arrIn)
+	# print(tensor)
+
+	# Compute 3D Voronoi diagram
+	# Input: a 3D texture. Each pixel is an integer encoding 3 coordinates. 
+	# 		For each site at (x, y, z), the pixel at coordinate (x, y, z) should contain 
+	# 		the encoded coordinate (x, y, z). Pixels that are not sites should contain 
+	# 		the integer MARKER. Use ENCODE (and DECODE) macro to encode (and decode).
+	# See our website for the effect of the three parameters: 
+	# 		phase1Band, phase2Band, phase3Band
+	# Parameters must divide textureSize
+	pba3d.distance(arrIn, arrOut, 1, 1, 2)
+	print(arrOut)
+
 def voronoi_to_dist(voronoi):
 	""" voronoi is encoded """
 	def decoded_nonstacked(p):
@@ -91,6 +151,10 @@ def voronoi_to_dist(voronoi):
 	return np.sqrt((x_v - x_i) ** 2 + (y_v - y_i) ** 2 + (z_v - z_i) ** 2)
 
 
+"""
 arr = np.load("test.npy")
 dist = voronoi_to_dist(arr)
 np.save("out.npy", dist)
+"""
+
+distance3d()

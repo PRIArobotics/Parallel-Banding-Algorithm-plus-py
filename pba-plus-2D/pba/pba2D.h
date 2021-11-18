@@ -59,6 +59,9 @@ extern "C" void pba2DDeinitialization();
 extern "C" void pba2DVoronoiDiagram(short *input, short *output, int phase1Band,
                                     int phase2Band, int phase3Band);
 
+extern "C" void pba2DDistance(short *input, float *output, int phase1Band,
+    int phase2Band, int phase3Band);
+
 // MARKER is used to mark blank pixels in the texture. 
 // Any uncolored pixels will have x = MARKER. 
 // Input texture should have x = MARKER for all pixels other than sites

@@ -131,6 +131,14 @@ void pba3DCompute(int m1, int m2, int m3)
 	pba3DColorYAxis(m3); 
 }
 
+void pba3DComputeDistance()
+{
+    dim3 block = dim3();
+    dim3 grid = dim3(pbaTexSize, pbaTexSize, pbaTexSize);
+
+    kernelDistance <<< grid, block >>>(pbaTextures[pbaCurrentBuffer], (float*)pbaTextures[1 - pbaCurrentBuffer], pbaTexSize);
+}
+
 // Compute 3D Voronoi diagram
 // Input: a 3D texture. Each pixel is an integer encoding 3 coordinates. 
 // 		For each site at (x, y, z), the pixel at coordinate (x, y, z) should contain 
@@ -152,3 +160,15 @@ void pba3DVoronoiDiagram(int *input, int *output,
     cudaMemcpy(output, pbaTextures[pbaCurrentBuffer], pbaMemSize, cudaMemcpyDeviceToHost); 
 }
 
+void pba3DDistance(int *input, float *output, int phase1Band, int phase2Band, int phase3Band)
+{
+    // Initialization
+    pba3DInitializeInput(input);
+
+    // Compute the 3D Voronoi Diagram
+    pba3DCompute(phase1Band, phase2Band, phase3Band);
+    pba3DComputeDistance();
+
+    // Copy back the result
+    cudaMemcpy(output, pbaTextures[1 - pbaCurrentBuffer], pbaMemSize, cudaMemcpyDeviceToHost);
+}
