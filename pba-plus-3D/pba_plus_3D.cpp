@@ -45,7 +45,7 @@ PyObject* pba3DDistance_impl(PyObject*, PyObject* args) {
 	if (!PyArg_ParseTuple(args, "O!O!iii", &PyArray_Type, &oIn, &PyArray_Type, &oOut, &phase1Band, &phase2Band, &phase3Band))
 		return NULL;
 
-	PyArrayObject* arrIn = (PyArrayObject*)PyArray_FROM_OTF(oIn, NPY_INT, NPY_ARRAY_IN_ARRAY);
+	PyArrayObject* arrIn = (PyArrayObject*)PyArray_FROM_OTF(oIn, NPY_BOOL, NPY_ARRAY_IN_ARRAY);
 	if (arrIn == NULL)
 		return NULL;
 
@@ -80,11 +80,11 @@ PyObject* pba3DDistance_impl(PyObject*, PyObject* args) {
 	}
 
 	int textureSize = PyArray_DIM(arrIn, 0);
-	int* data = (int*)PyArray_DATA(arrIn);
+	bool* data = (bool*)PyArray_DATA(arrIn);
 	float* output = (float*)PyArray_DATA(arrOut);
 
 	pba3DInitialization(textureSize);
-	pba3DDistance(data, output, phase1Band, phase2Band, phase3Band);
+	pba3DEncodeAndDistance(data, output, phase1Band, phase2Band, phase3Band);
 	pba3DDeinitialization();
 
 	PyArray_ResolveWritebackIfCopy(arrIn);

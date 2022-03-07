@@ -115,6 +115,7 @@ def distance3d():
 	])
 	# points = np.transpose(np.where(omega))
 
+	"""
 	# empty input array
 	arrIn = np.full([512, 512, 512], pba3d.MARKER, dtype=int)
 	# put the points at their positions
@@ -137,6 +138,14 @@ def distance3d():
 	# See our website for the effect of the three parameters: 
 	# 		phase1Band, phase2Band, phase3Band
 	# Parameters must divide textureSize
+	"""
+
+	arrIn = np.full([512, 512, 512], False, dtype=bool)
+	arrIn[points[:, 2], points[:, 1], points[:, 0]] = True
+
+	arrOut = np.full(arrIn.shape, 0, dtype=np.float32)
+
+	print(arrIn)
 	pba3d.distance(arrIn, arrOut, 1, 1, 2)
 	print(arrOut)
 

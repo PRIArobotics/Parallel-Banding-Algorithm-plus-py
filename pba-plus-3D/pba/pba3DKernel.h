@@ -211,6 +211,21 @@ __global__ void kernelColorAxis(int *input, int *output, int size)
 	}
 }
 
+__global__ void kernelEncodeBools(bool* input, int* output, int size)
+{
+	int tx = blockIdx.x * blockDim.x + threadIdx.x;
+	int tz = blockIdx.y * blockDim.y + threadIdx.y;
+	int ty = blockIdx.z * blockDim.z + threadIdx.z;
+
+	int id = TOID(tx, ty, tz, size);
+
+	bool site = input[id];
+
+	int encoded = site ? ENCODE(tx, ty, tz, 0, 0) : MARKER;
+
+	output[id] = encoded;
+}
+
 __global__ void kernelDistance(int* input, float* output, int size)
 {
 	int tx = blockIdx.x * blockDim.x + threadIdx.x;

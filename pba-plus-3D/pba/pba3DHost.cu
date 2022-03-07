@@ -84,6 +84,14 @@ void pba3DDeinitialization()
 }
 
 // Copy input to GPU 
+void pba3DInitializeBoolInput(bool* input)
+{
+    cudaMemcpy(pbaTextures[1], input, pbaTexSize * pbaTexSize * pbaTexSize * sizeof(bool), cudaMemcpyHostToDevice);
+
+    pbaCurrentBuffer = 1;
+}
+
+// Copy input to GPU 
 void pba3DInitializeInput(int *input)
 {
     cudaMemcpy(pbaTextures[0], input, pbaMemSize, cudaMemcpyHostToDevice); 
@@ -116,6 +124,15 @@ void pba3DColorYAxis(int m3)
     dim3 grid = dim3(pbaTexSize / block.x, pbaTexSize); 
 
     kernelColorAxis<<< grid, block >>>(pbaTextures[1 - pbaCurrentBuffer], pbaTextures[pbaCurrentBuffer], pbaTexSize); 
+}
+
+void pba3DEncodeBools()
+{
+    dim3 block = dim3();
+    dim3 grid = dim3(pbaTexSize, pbaTexSize, pbaTexSize);
+
+    kernelEncodeBools <<< grid, block >>> ((bool*)pbaTextures[pbaCurrentBuffer], (int*)pbaTextures[1 - pbaCurrentBuffer], pbaTexSize);
+    pbaCurrentBuffer = 1 - pbaCurrentBuffer;
 }
 
 void pba3DCompute(int m1, int m2, int m3)
@@ -164,6 +181,20 @@ void pba3DDistance(int *input, float *output, int phase1Band, int phase2Band, in
 {
     // Initialization
     pba3DInitializeInput(input);
+
+    // Compute the 3D Voronoi Diagram
+    pba3DCompute(phase1Band, phase2Band, phase3Band);
+    pba3DComputeDistance();
+
+    // Copy back the result
+    cudaMemcpy(output, pbaTextures[1 - pbaCurrentBuffer], pbaMemSize, cudaMemcpyDeviceToHost);
+}
+
+void pba3DEncodeAndDistance(bool* input, float* output, int phase1Band, int phase2Band, int phase3Band)
+{
+    // Initialization
+    pba3DInitializeBoolInput(input);
+    pba3DEncodeBools();
 
     // Compute the 3D Voronoi Diagram
     pba3DCompute(phase1Band, phase2Band, phase3Band);

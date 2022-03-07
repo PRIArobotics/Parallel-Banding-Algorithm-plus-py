@@ -63,6 +63,9 @@ extern "C" void pba3DVoronoiDiagram(int *input, int *output,
 extern "C" void pba3DDistance(int *input, float *output,
                               int phase1Band, int phase2Band, int phase3Band);
 
+extern "C" void pba3DEncodeAndDistance(bool* input, float* output,
+    int phase1Band, int phase2Band, int phase3Band);
+
 #define MARKER	    -2147483648
 #define MAX_INT 	2147483647
 
